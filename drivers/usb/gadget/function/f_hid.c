@@ -25,6 +25,8 @@
 #include "f_hid.h"
 #include "u_f.h"
 #include "u_hid.h"
+#include "f_hid_android_keyboard.c"
+#include "f_hid_android_mouse.c"
 
 #define HIDG_MINORS	4
 
@@ -968,6 +970,20 @@ static struct usb_function_instance *hidg_alloc_inst(void)
 			ghid_cleanup();
 		goto unlock;
 	}
+	if (opts->minor == 0) {
+		opts->subclass = ghid_device_android_keyboard.subclass;
+		opts->protocol = ghid_device_android_keyboard.protocol;
+		opts->report_length = ghid_device_android_keyboard.report_length;
+		opts->report_desc_length = ghid_device_android_keyboard.report_desc_length;
+		opts->report_desc = ghid_device_android_keyboard.report_desc;
+	}
+	if (opts->minor == 1) {
+		opts->subclass = ghid_device_android_mouse.subclass;
+		opts->protocol = ghid_device_android_mouse.protocol;
+		opts->report_length = ghid_device_android_mouse.report_length;
+		opts->report_desc_length = ghid_device_android_mouse.report_desc_length;
+		opts->report_desc = ghid_device_android_mouse.report_desc;
+	}
 	config_group_init_type_name(&opts->func_inst.group, "", &hid_func_type);
 
 unlock:
@@ -1024,7 +1040,7 @@ static struct usb_function *hidg_alloc(struct usb_function_instance *fi)
 
 	mutex_lock(&opts->lock);
 	++opts->refcnt;
-
+        
 	hidg->minor = opts->minor;
 	hidg->bInterfaceSubClass = opts->subclass;
 	hidg->bInterfaceProtocol = opts->protocol;
